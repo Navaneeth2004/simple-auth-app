@@ -1,6 +1,6 @@
 # Simple Social Auth with Node.js & React
 
-A super simple Google and Facebook authentication system using Grant (no Passport) and React.
+A super simple Google and Facebook authentication system using Grant and React.
 
 ## Prerequisites
 
