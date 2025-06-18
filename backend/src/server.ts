@@ -33,7 +33,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Grant configuration
+// Grant configuration - Only Google now
 const grantConfig = {
   defaults: {
     origin: 'http://localhost:5000',
@@ -45,19 +45,13 @@ const grantConfig = {
     secret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
     scope: ['profile', 'email'],
     callback: '/auth/google/callback'
-  },
-  facebook: {
-    key: process.env.FACEBOOK_APP_ID || 'your-facebook-app-id',
-    secret: process.env.FACEBOOK_APP_SECRET || 'your-facebook-app-secret',
-    scope: ['email'],
-    callback: '/auth/facebook/callback'
   }
 };
 
 // Initialize Grant
 app.use(grant.express(grantConfig));
 
-// Routes
+// Routes - Only Google callback needed
 app.get('/auth/google/callback', (req, res) => {
   const user = req.session.grant?.response;
   if (user) {
@@ -67,26 +61,30 @@ app.get('/auth/google/callback', (req, res) => {
   }
 });
 
-app.get('/auth/facebook/callback', (req, res) => {
-  const user = req.session.grant?.response;
-  if (user) {
-    res.redirect(`http://localhost:3000?user=${encodeURIComponent(JSON.stringify(user))}`);
-  } else {
-    res.redirect('http://localhost:3000?error=auth_failed');
-  }
-});
-
+// Get current user session
 app.get('/user', (req, res) => {
   const user = req.session.grant?.response;
   res.json({ user: user || null });
 });
 
+// Logout route
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.json({ message: 'Logged out' });
   });
 });
 
+// Health check route
+app.get('/health', (req, res) => {
+  res.json({ status: 'Server is running', timestamp: new Date().toISOString() });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log('Available routes:');
+  console.log('- GET /connect/google - Initiate Google OAuth');
+  console.log('- GET /auth/google/callback - Google OAuth callback');
+  console.log('- GET /user - Get current user session');
+  console.log('- GET /logout - Logout user');
+  console.log('- GET /health - Health check');
 });
