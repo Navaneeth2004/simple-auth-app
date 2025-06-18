@@ -47,7 +47,7 @@ const App: React.FC = () => {
   const [fbLoaded, setFbLoaded] = useState(false);
 
   // Configuration - replace with your actual IDs
-  const FACEBOOK_APP_ID = '1024475463213438';
+  const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID || 'your-facebook-app-id';
 
   // Function to decode JWT token for Google
   const decodeJWT = (token: string): any => {
