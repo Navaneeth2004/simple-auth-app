@@ -1,6 +1,6 @@
 # Simple Social Auth with Node.js & React
 
-A super simple Google and Facebook authentication system using Grant and React.
+A simple authentication system with **Google OAuth on the backend** (using Grant) and **Facebook OAuth on the frontend** (using Facebook SDK).
 
 ## Prerequisites
 
@@ -15,7 +15,8 @@ A super simple Google and Facebook authentication system using Grant and React.
    - Go to [Facebook Developers](https://developers.facebook.com/)
    - Create a new app
    - Add Facebook Login product
-   - Add `http://localhost:5000/connect/facebook/callback` to Valid OAuth Redirect URIs
+   - Add `http://localhost:3000` to Valid OAuth Redirect URIs
+   - Add `localhost` to App Domains
 
 ## Setup
 
@@ -36,8 +37,6 @@ mkdir src
 # Create .env file with your credentials
 echo "GOOGLE_CLIENT_ID=your_google_client_id" > .env
 echo "GOOGLE_CLIENT_SECRET=your_google_client_secret" >> .env
-echo "FACEBOOK_APP_ID=your_facebook_app_id" >> .env
-echo "FACEBOOK_APP_SECRET=your_facebook_app_secret" >> .env
 
 # Start the backend
 npm run dev
@@ -57,13 +56,16 @@ mkdir src
 # Copy App.tsx, App.css, index.tsx to src/
 # Copy tsconfig.json to root
 
+# Create .env file with Facebook App ID
+echo "REACT_APP_FACEBOOK_APP_ID=your_facebook_app_id" > .env
+
 # Create public/index.html
 mkdir public
 echo '<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Social Auth Demo</title>
 </head>
 <body>
@@ -80,16 +82,28 @@ npm start
 1. Start the backend server (runs on port 5000)
 2. Start the frontend (runs on port 3000)
 3. Open http://localhost:3000
-4. Click "Login with Google" or "Login with Facebook"
+4. Click "Login with Google" (redirects to backend) or "Login with Facebook" (handled on frontend)
 5. Complete the OAuth flow
 6. View user information on the page
 
 ## How it works
 
-- **Backend**: Uses Grant to handle OAuth flows with Google and Facebook
-- **Frontend**: Simple React app that redirects to backend for auth and displays user info
-- **No Database**: User data is only stored in session and displayed on frontend
-- **Super Simple**: Minimal code, no unnecessary complexity
+### Google Authentication (Backend)
+- **Flow**: Frontend → Backend → Google → Backend → Frontend
+- Uses Grant middleware to handle OAuth flow
+- User data is passed back to frontend via URL parameters
+- Session managed on backend
+
+### Facebook Authentication (Frontend)
+- **Flow**: Frontend → Facebook → Frontend
+- Uses Facebook JavaScript SDK loaded dynamically
+- OAuth flow handled entirely in the browser
+- User data stored in React state
+
+### Benefits of Mixed Approach
+- **Google**: More secure with client secret on backend, better for production
+- **Facebook**: Simpler implementation, no backend session needed
+- **Flexibility**: Choose the best approach for each provider
 
 ## Project Structure
 
@@ -109,7 +123,36 @@ auth-frontend/
 ├── public/
 │   └── index.html
 ├── package.json
-└── tsconfig.json
+├── tsconfig.json
+└── .env
 ```
 
-That's it! Super simple social authentication system.
+## Environment Variables
+
+### Backend (.env)
+```
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
+### Frontend (.env)
+```
+REACT_APP_FACEBOOK_APP_ID=your_facebook_app_id
+```
+
+## Security Notes
+
+- Google client secret is safely stored on backend
+- Facebook login uses public App ID (no secret needed for frontend)
+- CORS is configured to only allow requests from localhost:3000
+- Sessions are used for Google authentication state
+
+## Available Routes (Backend)
+
+- `GET /connect/google` - Initiate Google OAuth
+- `GET /auth/google/callback` - Google OAuth callback
+- `GET /user` - Get current user session
+- `GET /logout` - Logout user
+- `GET /health` - Health check
+
+That's it! A mixed approach social authentication system combining the best of both backend and frontend OAuth implementations.
